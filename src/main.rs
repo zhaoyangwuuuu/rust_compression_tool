@@ -2,13 +2,20 @@ mod huffman;
 
 use huffman::{build_tree, encode_data, generate_codes};
 use std::collections::HashMap;
+use std::env;
 use std::fs::File;
-use std::io::{self, BufReader, Read, Write};
+use std::io::{self, Read, Write};
 
 fn main() -> io::Result<()> {
-    // TODO: user input, and extract file
-    let filename = "input.txt";
-    let output_filename = "output.bin";
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 {
+        eprintln!("Usage: {} <filename>", args[0]);
+        std::process::exit(1);
+    }
+
+    let filename = &args[1];
+    let output_filename = format!("{}.compressed", filename);
 
     // Read the file contents into a string
     let mut file = File::open(filename)?;
@@ -29,8 +36,12 @@ fn main() -> io::Result<()> {
     let encoded_data = encode_data(&contents, &codes);
 
     // Write the compress data to a file
-    let mut output = File::create(output_filename)?;
-    output.write_all(&encoded_data)
+    let mut output = File::create(&output_filename)?;
+    output.write_all(&encoded_data)?;
+
+    println!("File compressed successfully: {}", output_filename);
+
+    Ok(())
 }
 
 fn count_frequencies(contents: &str) -> HashMap<u8, usize> {
