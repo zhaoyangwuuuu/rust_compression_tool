@@ -1,7 +1,7 @@
+mod huffman;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Write};
-// use huffman::{build};
 
 fn main() -> io::Result<()> {
     let filename = "input.txt";
@@ -14,6 +14,10 @@ fn main() -> io::Result<()> {
 
     // Count the frequency of each byte
     let frequencies = count_frequencies(&contents);
+
+    todo!()
+    // Build the Huffman tree
+    // let huffman_tree = build_tree($frequencies);
 }
 
 fn count_frequencies(contents: &str) -> HashMap<u8, usize> {
