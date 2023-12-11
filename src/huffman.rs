@@ -3,7 +3,6 @@ use std::collections::{BinaryHeap, HashMap};
 
 // Define HuffmanNode struct
 
-#[derive(Debug)]
 pub struct HuffmanNode {
     byte: Option<u8>,
     freq: usize,
@@ -12,6 +11,14 @@ pub struct HuffmanNode {
 }
 
 impl HuffmanNode {
+    fn new() -> Self {
+        HuffmanNode {
+            byte: None,
+            freq: 0,
+            left: None,
+            right: None,
+        }
+    }
     fn new_leaf(byte: u8, freq: usize) -> Self {
         HuffmanNode {
             byte: Some(byte),
@@ -98,4 +105,64 @@ pub fn encode_data(contents: &str, codes: &HashMap<u8, Vec<u8>>) -> Vec<u8> {
     }
 
     encoded_data
+}
+
+pub fn decode_data(encoded_data: &[u8], huffman_tree: &HuffmanNode) -> Vec<u8> {
+    let mut current_node = huffman_tree;
+    let mut decoded_data = Vec::new();
+
+    for &byte in encoded_data {
+        for i in (0..8).rev() {
+            let bit = (byte >> i) & 1;
+
+            current_node = if bit == 0 {
+                current_node.left.as_ref().unwrap()
+            } else {
+                current_node.right.as_ref().unwrap()
+            };
+
+            if let Some(value) = current_node.byte {
+                decoded_data.push(value);
+                current_node = huffman_tree; // Reset to start of the tree for next character
+            }
+        }
+    }
+
+    decoded_data
+}
+
+pub fn build_tree_from_codes(codes: &HashMap<u8, Vec<u8>>) -> Option<Box<HuffmanNode>> {
+    let mut root = Box::new(HuffmanNode::new_node(
+        0,
+        HuffmanNode::new(),
+        HuffmanNode::new(),
+    ));
+
+    for (&byte, code) in codes {
+        let mut current = &mut root;
+        for &bit in code {
+            current = if bit == 0 {
+                if current.left.is_none() {
+                    current.left = Some(Box::new(HuffmanNode::new_node(
+                        0,
+                        HuffmanNode::new(),
+                        HuffmanNode::new(),
+                    )));
+                }
+                current.left.as_mut().unwrap()
+            } else {
+                if current.right.is_none() {
+                    current.right = Some(Box::new(HuffmanNode::new_node(
+                        0,
+                        HuffmanNode::new(),
+                        HuffmanNode::new(),
+                    )));
+                }
+                current.right.as_mut().unwrap()
+            };
+        }
+        current.byte = Some(byte);
+    }
+
+    Some(root)
 }
